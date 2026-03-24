@@ -1,0 +1,528 @@
+{
+  "departments": [
+    {
+      "code": "hr",
+      "name": {
+        "en": "HR",
+        "ru": "HR",
+        "uz": "HR"
+      },
+      "requires_contact_gate": false,
+      "contact_gate_text": null,
+      "asks_department_feedback": true,
+      "sticker_emoji": "\ud83d\udc54",
+      "sticker_file_id": null,
+      "questions": [
+        {
+          "code": "q1",
+          "text": {
+            "en": "How clear are explanations about company policies and requirements?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u043d\u044f\u0442\u043d\u044b \u043e\u0431\u044a\u044f\u0441\u043d\u0435\u043d\u0438\u044f \u043f\u043e \u043f\u043e\u043b\u0438\u0442\u0438\u043a\u0430\u043c \u043a\u043e\u043c\u043f\u0430\u043d\u0438\u0438 \u0438 \u0442\u0440\u0435\u0431\u043e\u0432\u0430\u043d\u0438\u044f\u043c?",
+            "uz": "How clear are explanations about company policies and requirements?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q2",
+          "text": {
+            "en": "How quickly do you get a response when you need help?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0431\u044b\u0441\u0442\u0440\u043e \u0432\u044b \u043f\u043e\u043b\u0443\u0447\u0430\u0435\u0442\u0435 \u043e\u0442\u0432\u0435\u0442, \u043a\u043e\u0433\u0434\u0430 \u0432\u0430\u043c \u043d\u0443\u0436\u043d\u0430 \u043f\u043e\u043c\u043e\u0449\u044c?",
+            "uz": "How quickly do you get a response when you need help?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q3",
+          "text": {
+            "en": "How respectful is communication with drivers?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0443\u0432\u0430\u0436\u0438\u0442\u0435\u043b\u044c\u043d\u043e \u0441 \u0432\u0430\u043c\u0438 \u043e\u0431\u0449\u0430\u044e\u0442\u0441\u044f \u043a\u0430\u043a \u0441 \u0432\u043e\u0434\u0438\u0442\u0435\u043b\u0435\u043c?",
+            "uz": "How respectful is communication with drivers?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q4",
+          "text": {
+            "en": "How helpful is support when resolving your questions?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u043b\u0435\u0437\u043d\u0430 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u043a\u0430 \u043f\u0440\u0438 \u0440\u0435\u0448\u0435\u043d\u0438\u0438 \u0432\u0430\u0448\u0438\u0445 \u0432\u043e\u043f\u0440\u043e\u0441\u043e\u0432?",
+            "uz": "How helpful is support when resolving your questions?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q5",
+          "text": {
+            "en": "How satisfied are you overall with this support?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0432\u044b \u0432 \u0446\u0435\u043b\u043e\u043c \u0434\u043e\u0432\u043e\u043b\u044c\u043d\u044b \u044d\u0442\u043e\u0439 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u043a\u043e\u0439?",
+            "uz": "How satisfied are you overall with this support?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        }
+      ]
+    },
+    {
+      "code": "safety",
+      "name": {
+        "en": "Safety",
+        "ru": "Safety",
+        "uz": "Safety"
+      },
+      "requires_contact_gate": false,
+      "contact_gate_text": null,
+      "asks_department_feedback": true,
+      "sticker_emoji": "\ud83e\uddba",
+      "sticker_file_id": null,
+      "questions": [
+        {
+          "code": "q1",
+          "text": {
+            "en": "How confident are you that your permits, certificates, stickers, and other required documents are in order?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0432\u044b \u0443\u0432\u0435\u0440\u0435\u043d\u044b, \u0447\u0442\u043e \u0432\u0430\u0448\u0438 permits, certificates, stickers \u0438 \u0434\u0440\u0443\u0433\u0438\u0435 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b \u043d\u0430\u0445\u043e\u0434\u044f\u0442\u0441\u044f \u0432 \u043f\u043e\u0440\u044f\u0434\u043a\u0435?",
+            "uz": "How confident are you that your permits, certificates, stickers, and other required documents are in order?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q2",
+          "text": {
+            "en": "How clear and useful was your orientation?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u043d\u044f\u0442\u043d\u043e \u0438 \u043f\u043e\u043b\u0435\u0437\u043d\u043e \u0431\u044b\u043b \u043f\u0440\u043e\u0432\u0435\u0434\u0435\u043d \u0432\u0430\u0448 Safety orientation?",
+            "uz": "How clear and useful was your orientation?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q3",
+          "text": {
+            "en": "How well are you prepared for inspections and standard compliance checks?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0445\u043e\u0440\u043e\u0448\u043e \u043e\u0442\u0434\u0435\u043b Safety \u043f\u043e\u0434\u0433\u043e\u0442\u0430\u0432\u043b\u0438\u0432\u0430\u0435\u0442 \u0432\u0430\u0441 \u043a \u0438\u043d\u0441\u043f\u0435\u043a\u0446\u0438\u044f\u043c \u0438 \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u044b\u043c compliance-\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430\u043c?",
+            "uz": "How well are you prepared for inspections and standard compliance checks?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q4",
+          "text": {
+            "en": "How quickly and clearly do you get help when there is a problem with documents or compliance?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0431\u044b\u0441\u0442\u0440\u043e \u0438 \u043f\u043e\u043d\u044f\u0442\u043d\u043e \u043e\u0442\u0434\u0435\u043b Safety \u043f\u043e\u043c\u043e\u0433\u0430\u0435\u0442, \u043a\u043e\u0433\u0434\u0430 \u0432\u043e\u0437\u043d\u0438\u043a\u0430\u0435\u0442 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u0430 \u0441 \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430\u043c\u0438 \u0438\u043b\u0438 compliance?",
+            "uz": "How quickly and clearly do you get help when there is a problem with documents or compliance?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q5",
+          "text": {
+            "en": "When a problem happens, how clearly is the next step explained to you so you can resolve it correctly?",
+            "ru": "\u041a\u043e\u0433\u0434\u0430 \u0432\u043e\u0437\u043d\u0438\u043a\u0430\u0435\u0442 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u0430, \u043d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0445\u043e\u0440\u043e\u0448\u043e Safety \u043e\u0431\u044a\u044f\u0441\u043d\u044f\u0435\u0442, \u0447\u0442\u043e \u0434\u0435\u043b\u0430\u0442\u044c \u0434\u0430\u043b\u044c\u0448\u0435, \u0447\u0442\u043e\u0431\u044b \u0432\u044b \u043c\u043e\u0433\u043b\u0438 \u043f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u043e \u0435\u0435 \u0440\u0435\u0448\u0438\u0442\u044c?",
+            "uz": "When a problem happens, how clearly is the next step explained to you so you can resolve it correctly?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        }
+      ]
+    },
+    {
+      "code": "hos",
+      "name": {
+        "en": "HOS / ELD",
+        "ru": "HOS / ELD",
+        "uz": "HOS / ELD"
+      },
+      "requires_contact_gate": false,
+      "contact_gate_text": null,
+      "asks_department_feedback": true,
+      "sticker_emoji": "\u23f1\ufe0f",
+      "sticker_file_id": null,
+      "questions": [
+        {
+          "code": "q1",
+          "text": {
+            "en": "How well do you get help keeping logs correctly and without extra stress?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0445\u043e\u0440\u043e\u0448\u043e \u043a\u043e\u043c\u0430\u043d\u0434\u0430 HOS / ELD \u043f\u043e\u043c\u043e\u0433\u0430\u0435\u0442 \u0432\u0430\u043c \u0432\u0435\u0441\u0442\u0438 \u043b\u043e\u0433\u0438 \u043f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u043e \u0438 \u0431\u0435\u0437 \u043b\u0438\u0448\u043d\u0435\u0433\u043e \u0441\u0442\u0440\u0435\u0441\u0441\u0430?",
+            "uz": "How well do you get help keeping logs correctly and without extra stress?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q2",
+          "text": {
+            "en": "How quickly do you get help when there is an ELD issue, a log error, or an HOS question?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0431\u044b\u0441\u0442\u0440\u043e \u0432\u044b \u043f\u043e\u043b\u0443\u0447\u0430\u0435\u0442\u0435 \u043f\u043e\u043c\u043e\u0449\u044c, \u043a\u043e\u0433\u0434\u0430 \u0432\u043e\u0437\u043d\u0438\u043a\u0430\u0435\u0442 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u0430 \u0441 ELD, \u043e\u0448\u0438\u0431\u043a\u0430 \u0432 \u043b\u043e\u0433\u0430\u0445 \u0438\u043b\u0438 \u0432\u043e\u043f\u0440\u043e\u0441 \u043f\u043e HOS?",
+            "uz": "How quickly do you get help when there is an ELD issue, a log error, or an HOS question?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q3",
+          "text": {
+            "en": "How useful is the support in unexpected situations such as road closures, accidents, or serious delays?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u043b\u0435\u0437\u043d\u0430 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u043a\u0430 HOS / ELD \u0432 \u043d\u0435\u043f\u0440\u0435\u0434\u0432\u0438\u0434\u0435\u043d\u043d\u044b\u0445 \u0441\u0438\u0442\u0443\u0430\u0446\u0438\u044f\u0445, \u0442\u0430\u043a\u0438\u0445 \u043a\u0430\u043a \u0437\u0430\u043a\u0440\u044b\u0442\u0438\u0435 \u0434\u043e\u0440\u043e\u0433, \u0430\u0432\u0430\u0440\u0438\u0438 \u0438\u043b\u0438 \u0441\u0435\u0440\u044c\u0435\u0437\u043d\u044b\u0435 \u0437\u0430\u0434\u0435\u0440\u0436\u043a\u0438?",
+            "uz": "How useful is the support in unexpected situations such as road closures, accidents, or serious delays?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q4",
+          "text": {
+            "en": "How clearly is it explained what you can do when your available hours change or are reduced?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u043d\u044f\u0442\u043d\u043e \u043a\u043e\u043c\u0430\u043d\u0434\u0430 HOS / ELD \u043e\u0431\u044a\u044f\u0441\u043d\u044f\u0435\u0442, \u0447\u0442\u043e \u0432\u044b \u043c\u043e\u0436\u0435\u0442\u0435 \u0441\u0434\u0435\u043b\u0430\u0442\u044c, \u043a\u043e\u0433\u0434\u0430 \u0432\u0430\u0448\u0438 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0435 \u0447\u0430\u0441\u044b \u043c\u0435\u043d\u044f\u044e\u0442\u0441\u044f \u0438\u043b\u0438 \u0441\u043e\u043a\u0440\u0430\u0449\u0430\u044e\u0442\u0441\u044f?",
+            "uz": "How clearly is it explained what you can do when your available hours change or are reduced?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q5",
+          "text": {
+            "en": "How confident are you that the support you receive helps you stay compliant and avoid violations?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0432\u044b \u0443\u0432\u0435\u0440\u0435\u043d\u044b, \u0447\u0442\u043e \u043f\u043e\u043b\u0443\u0447\u0430\u0435\u043c\u0430\u044f \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u043a\u0430 \u043f\u043e\u043c\u043e\u0433\u0430\u0435\u0442 \u0432\u0430\u043c \u0441\u043e\u0431\u043b\u044e\u0434\u0430\u0442\u044c \u0442\u0440\u0435\u0431\u043e\u0432\u0430\u043d\u0438\u044f \u0438 \u0438\u0437\u0431\u0435\u0433\u0430\u0442\u044c \u043d\u0430\u0440\u0443\u0448\u0435\u043d\u0438\u0439?",
+            "uz": "How confident are you that the support you receive helps you stay compliant and avoid violations?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        }
+      ]
+    },
+    {
+      "code": "claims",
+      "name": {
+        "en": "Claims",
+        "ru": "Claims",
+        "uz": "Claims"
+      },
+      "requires_contact_gate": true,
+      "contact_gate_text": {
+        "en": "Did you interact with Claims this quarter?",
+        "ru": "\u0412\u044b \u0432\u0437\u0430\u0438\u043c\u043e\u0434\u0435\u0439\u0441\u0442\u0432\u043e\u0432\u0430\u043b\u0438 \u0441 \u043e\u0442\u0434\u0435\u043b\u043e\u043c Claims \u0432 \u044d\u0442\u043e\u043c \u043a\u0432\u0430\u0440\u0442\u0430\u043b\u0435?",
+        "uz": "Bu chorakda Claims bo'limi bilan aloqada bo'ldingizmi?"
+      },
+      "asks_department_feedback": true,
+      "sticker_emoji": "\ud83d\udcc4",
+      "sticker_file_id": null,
+      "questions": [
+        {
+          "code": "q1",
+          "text": {
+            "en": "How quickly does someone get involved when an accident, damage, or insurance incident happens?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0431\u044b\u0441\u0442\u0440\u043e \u043e\u0442\u0434\u0435\u043b Claims \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u0435\u0442\u0441\u044f, \u043a\u043e\u0433\u0434\u0430 \u043f\u0440\u043e\u0438\u0441\u0445\u043e\u0434\u0438\u0442 \u0430\u0432\u0430\u0440\u0438\u044f, \u043f\u043e\u0432\u0440\u0435\u0436\u0434\u0435\u043d\u0438\u0435 \u0438\u043b\u0438 \u0441\u0442\u0440\u0430\u0445\u043e\u0432\u043e\u0439 \u0441\u043b\u0443\u0447\u0430\u0439?",
+            "uz": "How quickly does someone get involved when an accident, damage, or insurance incident happens?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q2",
+          "text": {
+            "en": "How clearly is it explained what is required from you: photos, documents, explanations, or other materials?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u043d\u044f\u0442\u043d\u043e \u043e\u0442\u0434\u0435\u043b Claims \u043e\u0431\u044a\u044f\u0441\u043d\u044f\u0435\u0442, \u0447\u0442\u043e \u0438\u043c\u0435\u043d\u043d\u043e \u0442\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044f \u043e\u0442 \u0432\u0430\u0441: \u0444\u043e\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0438, \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b, \u043e\u0431\u044a\u044f\u0441\u043d\u0435\u043d\u0438\u044f \u0438\u043b\u0438 \u0434\u0440\u0443\u0433\u0438\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b?",
+            "uz": "How clearly is it explained what is required from you: photos, documents, explanations, or other materials?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q3",
+          "text": {
+            "en": "How easy is it for you to go through the process from the first incident report to full resolution?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043b\u0435\u0433\u043a\u043e \u0432\u0430\u043c \u043f\u0440\u043e\u0439\u0442\u0438 \u043f\u0440\u043e\u0446\u0435\u0441\u0441 Claims \u043e\u0442 \u043f\u0435\u0440\u0432\u043e\u0433\u043e \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u043e \u0441\u043b\u0443\u0447\u0430\u0435 \u0434\u043e \u043f\u043e\u043b\u043d\u043e\u0433\u043e \u0440\u0435\u0448\u0435\u043d\u0438\u044f \u0432\u043e\u043f\u0440\u043e\u0441\u0430?",
+            "uz": "How easy is it for you to go through the process from the first incident report to full resolution?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q4",
+          "text": {
+            "en": "How regularly do you get updates about the status of your case?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0440\u0435\u0433\u0443\u043b\u044f\u0440\u043d\u043e \u043e\u0442\u0434\u0435\u043b Claims \u0441\u043e\u043e\u0431\u0449\u0430\u0435\u0442 \u0432\u0430\u043c \u043e \u0441\u0442\u0430\u0442\u0443\u0441\u0435 \u0432\u0430\u0448\u0435\u0433\u043e \u043a\u0435\u0439\u0441\u0430?",
+            "uz": "How regularly do you get updates about the status of your case?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q5",
+          "text": {
+            "en": "How well is your case managed and brought to a real resolution?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0445\u043e\u0440\u043e\u0448\u043e \u043e\u0442\u0434\u0435\u043b Claims \u0432\u0435\u0434\u0435\u0442 \u0432\u0430\u0448 \u043a\u0435\u0439\u0441 \u0438 \u0434\u043e\u0432\u043e\u0434\u0438\u0442 \u0435\u0433\u043e \u0434\u043e \u0440\u0435\u0430\u043b\u044c\u043d\u043e\u0433\u043e \u0440\u0435\u0448\u0435\u043d\u0438\u044f?",
+            "uz": "How well is your case managed and brought to a real resolution?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        }
+      ]
+    },
+    {
+      "code": "fleet",
+      "name": {
+        "en": "Fleet",
+        "ru": "Fleet",
+        "uz": "Fleet"
+      },
+      "requires_contact_gate": false,
+      "contact_gate_text": null,
+      "asks_department_feedback": true,
+      "sticker_emoji": "\ud83d\ude9a",
+      "sticker_file_id": null,
+      "questions": [
+        {
+          "code": "q1",
+          "text": {
+            "en": "How quickly do you get a response when there is a problem with your truck or trailer?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0431\u044b\u0441\u0442\u0440\u043e \u043e\u0442\u0434\u0435\u043b Fleet \u0440\u0435\u0430\u0433\u0438\u0440\u0443\u0435\u0442, \u043a\u043e\u0433\u0434\u0430 \u0432\u043e\u0437\u043d\u0438\u043a\u0430\u0435\u0442 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u0430 \u0441 \u0432\u0430\u0448\u0438\u043c \u0442\u0440\u0430\u043a\u043e\u043c \u0438\u043b\u0438 \u0442\u0440\u0435\u0439\u043b\u0435\u0440\u043e\u043c?",
+            "uz": "How quickly do you get a response when there is a problem with your truck or trailer?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q2",
+          "text": {
+            "en": "How quickly is roadside service connected and the case moved forward during a breakdown?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0431\u044b\u0441\u0442\u0440\u043e Fleet \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u0435\u0442 roadside service \u0438 \u043f\u0440\u043e\u0434\u0432\u0438\u0433\u0430\u0435\u0442 \u0440\u0435\u0448\u0435\u043d\u0438\u0435 \u043a\u0435\u0439\u0441\u0430 \u0432\u043e \u0432\u0440\u0435\u043c\u044f \u043f\u043e\u043b\u043e\u043c\u043a\u0438?",
+            "uz": "How quickly is roadside service connected and the case moved forward during a breakdown?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q3",
+          "text": {
+            "en": "How clearly and on time do you get notified about oil changes and scheduled maintenance?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u043d\u044f\u0442\u043d\u043e \u0438 \u0441\u0432\u043e\u0435\u0432\u0440\u0435\u043c\u0435\u043d\u043d\u043e Fleet \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u044f\u0435\u0442 \u0432\u0430\u0441 \u043e \u0437\u0430\u043c\u0435\u043d\u0435 \u043c\u0430\u0441\u043b\u0430 \u0438 \u043f\u043b\u0430\u043d\u043e\u0432\u043e\u043c \u0442\u0435\u0445\u043d\u0438\u0447\u0435\u0441\u043a\u043e\u043c \u043e\u0431\u0441\u043b\u0443\u0436\u0438\u0432\u0430\u043d\u0438\u0438?",
+            "uz": "How clearly and on time do you get notified about oil changes and scheduled maintenance?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q4",
+          "text": {
+            "en": "How well do you get help reducing downtime and returning to work as quickly as possible?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0445\u043e\u0440\u043e\u0448\u043e Fleet \u043f\u043e\u043c\u043e\u0433\u0430\u0435\u0442 \u0441\u043e\u043a\u0440\u0430\u0442\u0438\u0442\u044c downtime \u0438 \u0432\u0435\u0440\u043d\u0443\u0442\u044c \u0432\u0430\u0441 \u0432 \u0440\u0430\u0431\u043e\u0442\u0443 \u043a\u0430\u043a \u043c\u043e\u0436\u043d\u043e \u0431\u044b\u0441\u0442\u0440\u0435\u0435?",
+            "uz": "How well do you get help reducing downtime and returning to work as quickly as possible?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q5",
+          "text": {
+            "en": "How well are equipment issues solved the first time so the same problem does not come back again?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0445\u043e\u0440\u043e\u0448\u043e Fleet \u0440\u0435\u0448\u0430\u0435\u0442 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u044b \u0441 \u0442\u0435\u0445\u043d\u0438\u043a\u043e\u0439 \u0441 \u043f\u0435\u0440\u0432\u043e\u0433\u043e \u0440\u0430\u0437\u0430, \u0447\u0442\u043e\u0431\u044b \u043e\u0434\u043d\u0430 \u0438 \u0442\u0430 \u0436\u0435 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u0430 \u043d\u0435 \u0432\u043e\u0437\u0432\u0440\u0430\u0449\u0430\u043b\u0430\u0441\u044c \u0441\u043d\u043e\u0432\u0430?",
+            "uz": "How well are equipment issues solved the first time so the same problem does not come back again?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        }
+      ]
+    },
+    {
+      "code": "dispatch",
+      "name": {
+        "en": "Dispatch",
+        "ru": "Dispatch",
+        "uz": "Dispatch"
+      },
+      "requires_contact_gate": false,
+      "contact_gate_text": null,
+      "asks_department_feedback": true,
+      "sticker_emoji": "\ud83d\udcfb",
+      "sticker_file_id": null,
+      "questions": [
+        {
+          "code": "q1",
+          "text": {
+            "en": "How well are your loads and routes planned taking real road and work conditions into account?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0445\u043e\u0440\u043e\u0448\u043e Dispatch \u043f\u043b\u0430\u043d\u0438\u0440\u0443\u0435\u0442 \u0432\u0430\u0448\u0438 \u0433\u0440\u0443\u0437\u044b \u0438 \u043c\u0430\u0440\u0448\u0440\u0443\u0442\u044b \u0441 \u0443\u0447\u0435\u0442\u043e\u043c \u0440\u0435\u0430\u043b\u044c\u043d\u044b\u0445 \u0434\u043e\u0440\u043e\u0436\u043d\u044b\u0445 \u0438 \u0440\u0430\u0431\u043e\u0447\u0438\u0445 \u0443\u0441\u043b\u043e\u0432\u0438\u0439?",
+            "uz": "How well are your loads and routes planned taking real road and work conditions into account?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q2",
+          "text": {
+            "en": "How clearly do you receive key load details such as pickup and delivery time, route, miles, charges, and special instructions?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u043d\u044f\u0442\u043d\u043e Dispatch \u043f\u0435\u0440\u0435\u0434\u0430\u0435\u0442 \u043a\u043b\u044e\u0447\u0435\u0432\u044b\u0435 \u0434\u0435\u0442\u0430\u043b\u0438 \u043f\u043e \u0433\u0440\u0443\u0437\u0443, \u0442\u0430\u043a\u0438\u0435 \u043a\u0430\u043a \u0432\u0440\u0435\u043c\u044f pickup \u0438 delivery, \u043c\u0430\u0440\u0448\u0440\u0443\u0442, \u043c\u0438\u043b\u0438, charges \u0438 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u044c\u043d\u044b\u0435 \u0438\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438?",
+            "uz": "How clearly do you receive key load details such as pickup and delivery time, route, miles, charges, and special instructions?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q3",
+          "text": {
+            "en": "How quickly do you get a response when something changes, such as a cancelled load, route change, extra charges, or a road emergency?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0431\u044b\u0441\u0442\u0440\u043e Dispatch \u0440\u0435\u0430\u0433\u0438\u0440\u0443\u0435\u0442, \u043a\u043e\u0433\u0434\u0430 \u0447\u0442\u043e-\u0442\u043e \u043c\u0435\u043d\u044f\u0435\u0442\u0441\u044f, \u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440 \u043e\u0442\u043c\u0435\u043d\u0430 \u0433\u0440\u0443\u0437\u0430, \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u0435 \u043c\u0430\u0440\u0448\u0440\u0443\u0442\u0430, \u0434\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 charges \u0438\u043b\u0438 \u044d\u043a\u0441\u0442\u0440\u0435\u043d\u043d\u0430\u044f \u0441\u0438\u0442\u0443\u0430\u0446\u0438\u044f \u0432 \u0434\u043e\u0440\u043e\u0433\u0435?",
+            "uz": "How quickly do you get a response when something changes, such as a cancelled load, route change, extra charges, or a road emergency?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q4",
+          "text": {
+            "en": "How well do you get help solving problems on the trip and keeping the load moving when difficulties happen?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0445\u043e\u0440\u043e\u0448\u043e Dispatch \u043f\u043e\u043c\u043e\u0433\u0430\u0435\u0442 \u0440\u0435\u0448\u0430\u0442\u044c \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u044b \u0432 \u0440\u0435\u0439\u0441\u0435 \u0438 \u0443\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0442\u044c \u0433\u0440\u0443\u0437 \u0432 \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0438, \u043a\u043e\u0433\u0434\u0430 \u0432\u043e\u0437\u043d\u0438\u043a\u0430\u044e\u0442 \u0441\u043b\u043e\u0436\u043d\u043e\u0441\u0442\u0438?",
+            "uz": "How well do you get help solving problems on the trip and keeping the load moving when difficulties happen?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q5",
+          "text": {
+            "en": "How respectful and effective is your daily communication?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0443\u0432\u0430\u0436\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0439 \u0438 \u044d\u0444\u0444\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0439 \u044f\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0432\u0430\u0448\u0430 \u0435\u0436\u0435\u0434\u043d\u0435\u0432\u043d\u0430\u044f \u043a\u043e\u043c\u043c\u0443\u043d\u0438\u043a\u0430\u0446\u0438\u044f \u0441 Dispatch?",
+            "uz": "How respectful and effective is your daily communication?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        }
+      ]
+    },
+    {
+      "code": "accounting",
+      "name": {
+        "en": "Accounting",
+        "ru": "Accounting",
+        "uz": "Accounting"
+      },
+      "requires_contact_gate": false,
+      "contact_gate_text": null,
+      "asks_department_feedback": true,
+      "sticker_emoji": "\ud83d\udcb5",
+      "sticker_file_id": null,
+      "questions": [
+        {
+          "code": "q1",
+          "text": {
+            "en": "How accurately and on time are your pay, reimbursements, and deductions handled?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0442\u043e\u0447\u043d\u043e \u0438 \u0432\u043e\u0432\u0440\u0435\u043c\u044f Accounting \u0432\u0435\u0434\u0435\u0442 \u0432\u0430\u0448\u0443 \u043e\u043f\u043b\u0430\u0442\u0443, reimbursements \u0438 deductions?",
+            "uz": "How accurately and on time are your pay, reimbursements, and deductions handled?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q2",
+          "text": {
+            "en": "How clearly are settlements, deductions, and other payment details explained?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u043d\u044f\u0442\u043d\u043e Accounting \u043e\u0431\u044a\u044f\u0441\u043d\u044f\u0435\u0442 settlements, deductions \u0438 \u0434\u0440\u0443\u0433\u0438\u0435 \u0434\u0435\u0442\u0430\u043b\u0438 \u043f\u043e \u0432\u044b\u043f\u043b\u0430\u0442\u0430\u043c?",
+            "uz": "How clearly are settlements, deductions, and other payment details explained?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q3",
+          "text": {
+            "en": "How easy is it to get a clear answer when you need to check a pay issue?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043b\u0435\u0433\u043a\u043e \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u044c \u043e\u0442 Accounting \u043f\u043e\u043d\u044f\u0442\u043d\u044b\u0439 \u043e\u0442\u0432\u0435\u0442, \u0435\u0441\u043b\u0438 \u043d\u0443\u0436\u043d\u043e \u043f\u0440\u043e\u0432\u0435\u0440\u0438\u0442\u044c \u0432\u043e\u043f\u0440\u043e\u0441 \u043f\u043e \u0432\u0430\u0448\u0435\u0439 \u043e\u043f\u043b\u0430\u0442\u0435?",
+            "uz": "How easy is it to get a clear answer when you need to check a pay issue?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q4",
+          "text": {
+            "en": "If there is a payment error, how quickly is it corrected?",
+            "ru": "\u0415\u0441\u043b\u0438 \u0432 \u043e\u043f\u043b\u0430\u0442\u0435 \u0435\u0441\u0442\u044c \u043e\u0448\u0438\u0431\u043a\u0430, \u043d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0431\u044b\u0441\u0442\u0440\u043e Accounting \u0435\u0435 \u0438\u0441\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u0442?",
+            "uz": "If there is a payment error, how quickly is it corrected?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q5",
+          "text": {
+            "en": "How professionally and fairly are disputed or unclear pay issues handled?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u043e \u0438 \u0441\u043f\u0440\u0430\u0432\u0435\u0434\u043b\u0438\u0432\u043e Accounting \u0440\u0430\u0437\u0431\u0438\u0440\u0430\u0435\u0442 \u0441\u043f\u043e\u0440\u043d\u044b\u0435 \u0438\u043b\u0438 \u043d\u0435\u043f\u043e\u043d\u044f\u0442\u043d\u044b\u0435 \u0432\u043e\u043f\u0440\u043e\u0441\u044b \u043f\u043e \u043e\u043f\u043b\u0430\u0442\u0435?",
+            "uz": "How professionally and fairly are disputed or unclear pay issues handled?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        }
+      ]
+    },
+    {
+      "code": "management",
+      "name": {
+        "en": "Management",
+        "ru": "Management",
+        "uz": "Management"
+      },
+      "requires_contact_gate": false,
+      "contact_gate_text": null,
+      "asks_department_feedback": true,
+      "sticker_emoji": "\ud83e\udded",
+      "sticker_file_id": null,
+      "questions": [
+        {
+          "code": "q1",
+          "text": {
+            "en": "How clearly are work expectations such as gross, cents per mile, and working hours explained?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u043d\u044f\u0442\u043d\u043e \u0432\u044b\u0441\u0448\u0435\u0435 \u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0441\u0442\u0432\u043e \u043e\u0431\u044a\u044f\u0441\u043d\u044f\u0435\u0442 \u0440\u0430\u0431\u043e\u0447\u0438\u0435 \u043e\u0436\u0438\u0434\u0430\u043d\u0438\u044f, \u0442\u0430\u043a\u0438\u0435 \u043a\u0430\u043a gross, cents per mile \u0438 \u0440\u0430\u0431\u043e\u0447\u0438\u0435 \u0447\u0430\u0441\u044b?",
+            "uz": "How clearly are work expectations such as gross, cents per mile, and working hours explained?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q2",
+          "text": {
+            "en": "How well are driver problems and feedback listened to?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0445\u043e\u0440\u043e\u0448\u043e \u0432\u044b\u0441\u0448\u0435\u0435 \u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0441\u0442\u0432\u043e \u0432\u044b\u0441\u043b\u0443\u0448\u0438\u0432\u0430\u0435\u0442 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u044b \u0438 \u043e\u0431\u0440\u0430\u0442\u043d\u0443\u044e \u0441\u0432\u044f\u0437\u044c \u043e\u0442 \u0432\u043e\u0434\u0438\u0442\u0435\u043b\u0435\u0439?",
+            "uz": "How well are driver problems and feedback listened to?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q3",
+          "text": {
+            "en": "How fairly are driver problems resolved and decisions made in difficult situations?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0441\u043f\u0440\u0430\u0432\u0435\u0434\u043b\u0438\u0432\u043e \u0432\u044b\u0441\u0448\u0435\u0435 \u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0441\u0442\u0432\u043e \u0440\u0435\u0448\u0430\u0435\u0442 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u044b \u0432\u043e\u0434\u0438\u0442\u0435\u043b\u0435\u0439 \u0438 \u043f\u0440\u0438\u043d\u0438\u043c\u0430\u0435\u0442 \u0440\u0435\u0448\u0435\u043d\u0438\u044f \u0432 \u0441\u043b\u043e\u0436\u043d\u044b\u0445 \u0441\u0438\u0442\u0443\u0430\u0446\u0438\u044f\u0445?",
+            "uz": "How fairly are driver problems resolved and decisions made in difficult situations?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q4",
+          "text": {
+            "en": "How much respect do you feel in the way the company treats drivers?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0432\u044b \u0447\u0443\u0432\u0441\u0442\u0432\u0443\u0435\u0442\u0435 \u0443\u0432\u0430\u0436\u0435\u043d\u0438\u0435 \u0441\u043e \u0441\u0442\u043e\u0440\u043e\u043d\u044b \u0432\u044b\u0441\u0448\u0435\u0433\u043e \u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0441\u0442\u0432\u0430 \u0432 \u0442\u043e\u043c, \u043a\u0430\u043a \u043a\u043e\u043c\u043f\u0430\u043d\u0438\u044f \u043e\u0442\u043d\u043e\u0441\u0438\u0442\u0441\u044f \u043a \u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044f\u043c?",
+            "uz": "How much respect do you feel in the way the company treats drivers?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        },
+        {
+          "code": "q5",
+          "text": {
+            "en": "How much do you trust that promises are kept and decisions are made fairly?",
+            "ru": "\u041d\u0430\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0432\u044b \u0434\u043e\u0432\u0435\u0440\u044f\u0435\u0442\u0435 \u0432\u044b\u0441\u0448\u0435\u043c\u0443 \u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0441\u0442\u0432\u0443 \u0432 \u0442\u043e\u043c, \u0447\u0442\u043e \u043e\u043d\u043e \u0434\u0435\u0440\u0436\u0438\u0442 \u0441\u0432\u043e\u0435 \u0441\u043b\u043e\u0432\u043e \u0438 \u043f\u0440\u0438\u043d\u0438\u043c\u0430\u0435\u0442 \u0441\u043f\u0440\u0430\u0432\u0435\u0434\u043b\u0438\u0432\u044b\u0435 \u0440\u0435\u0448\u0435\u043d\u0438\u044f?",
+            "uz": "How much do you trust that promises are kept and decisions are made fairly?"
+          },
+          "scale_from": 1,
+          "scale_to": 10
+        }
+      ]
+    }
+  ]
+}
