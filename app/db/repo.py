@@ -33,7 +33,7 @@ async def find_driver(session: AsyncSession, unit_number: str, first_name: str, 
             Driver.unit_number == unit_number.strip(),
             Driver.first_name.ilike(first_name.strip()),
             Driver.last_name.ilike(last_name.strip()),
-            Driver.is_active == 1,
+            Driver.is_active.is_(True),
         )
     )
     return result.scalar_one_or_none()
@@ -41,13 +41,13 @@ async def find_driver(session: AsyncSession, unit_number: str, first_name: str, 
 
 async def list_drivers_by_unit(session: AsyncSession, unit_number: str) -> list[Driver]:
     result = await session.execute(
-        select(Driver).where(Driver.unit_number == unit_number.strip(), Driver.is_active == 1).order_by(Driver.last_name, Driver.first_name)
+        select(Driver).where(Driver.unit_number == unit_number.strip(), Driver.is_active.is_(True)).order_by(Driver.last_name, Driver.first_name)
     )
     return list(result.scalars().all())
 
 
 async def get_driver_by_id(session: AsyncSession, driver_id: int) -> Driver | None:
-    result = await session.execute(select(Driver).where(Driver.id == driver_id, Driver.is_active == 1))
+    result = await session.execute(select(Driver).where(Driver.id == driver_id, Driver.is_active.is_(True)))
     return result.scalar_one_or_none()
 
 
@@ -154,3 +154,4 @@ async def reset_run(session: AsyncSession, run: SurveyRun, unit_number: str, fir
     for resp in result.scalars().all():
         await session.delete(resp)
     await session.flush()
+
