@@ -80,7 +80,7 @@ unit_number,first_name,last_name
 1002,Ali,Karimov
 ```
 
-## Notes
+## Notes.
 - Bot uses long polling (`worker` process), so no webhook setup required.
 - If a driver has already submitted at least one answer in the current quarter, the bot blocks a second submission for that driver.
 - Google Sheets writes to:

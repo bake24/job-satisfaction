@@ -34,5 +34,3 @@ unit_number,first_name,last_name,dispatcher_1_first_name,dispatcher_1_last_name,
 0003,Bob,Stone,,,,,,,1
 ```
 
-The file template is stored here:
-- [DRIVERS_IMPORT_TEMPLATE.csv](C:\Users\bakwi\OneDrive\Desktop\job_bot\DRIVERS_IMPORT_TEMPLATE.csv)
