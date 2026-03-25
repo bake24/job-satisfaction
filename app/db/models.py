@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    BigInteger,
     String,
     Text,
     UniqueConstraint,
@@ -94,7 +95,7 @@ class TelegramUser(Base, TimestampMixin):
     __tablename__ = "telegram_users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    telegram_id: Mapped[int] = mapped_column(unique=True, index=True)
+    telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True)
     language: Mapped[str] = mapped_column(String(8), default="en")
 
     survey_runs: Mapped[list["SurveyRun"]] = relationship(back_populates="user")
@@ -176,3 +177,5 @@ class SurveyExport(Base, TimestampMixin):
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     survey_run: Mapped[SurveyRun] = relationship(back_populates="exports")
+
+
