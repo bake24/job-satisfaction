@@ -98,6 +98,47 @@ def build_wide_row(
     return row
 
 
+def build_all_progress_row(
+    data: dict[str, object],
+    run: SurveyRun,
+    responses: list[Response],
+    exported_at_utc: str,
+    current_department_code: str,
+    current_question_code: str,
+    progress_step: int,
+) -> dict[str, str]:
+    row: dict[str, str] = {
+        "survey_run_id": str(run.id),
+        "status": run.status,
+        "started_at_utc": run.started_at.isoformat() if run.started_at else "",
+        "last_updated_at_utc": exported_at_utc,
+        "completed_at_utc": run.completed_at.isoformat() if run.completed_at else "",
+        "survey_year": str(run.survey_year),
+        "survey_quarter": str(run.survey_quarter),
+        "survey_period_label": f"{run.survey_year}-Q{run.survey_quarter}",
+        "driver_id": str(run.driver_id),
+        "telegram_user_id": str(run.telegram_user_id),
+        "language": str(data["lang"]),
+        "unit_number": str(data["unit_number"]),
+        "first_name": str(data["first_name"]),
+        "last_name": str(data["last_name"]),
+        "current_department": current_department_code,
+        "current_question_code": current_question_code,
+        "progress_step": str(progress_step),
+    }
+    for dispatcher_data in list(data.get("assigned_dispatchers", [])):
+        slot_number = int(dispatcher_data["slot_number"])
+        row[f"dispatcher_{slot_number}_name"] = dispatcher_label(dispatcher_data)
+
+    for response in responses:
+        if response.department == "dispatch" and response.question_code.startswith("dispatcher_") and response.question_code.endswith("_rating"):
+            key = response.question_code
+        else:
+            key = f"{response.department}_{response.question_code}"
+        row[key] = response.answer_text if response.question_code == "feedback" else response.answer_code
+    return row
+
+
 def build_driver_status_row(data: dict[str, object], run: SurveyRun) -> dict[str, str]:
     row: dict[str, str] = {
         "driver_id": str(run.driver_id),
@@ -113,6 +154,39 @@ def build_driver_status_row(data: dict[str, object], run: SurveyRun) -> dict[str
         slot_number = int(dispatcher_data["slot_number"])
         row[f"dispatcher_{slot_number}_name"] = dispatcher_label(dispatcher_data)
     return row
+
+
+async def export_progress_snapshot(
+    state: FSMContext,
+    run_id: int,
+    current_department_code: str,
+    current_question_code: str,
+) -> None:
+    data = await state.get_data()
+    async with SessionLocal() as session:
+        run = await session.get(SurveyRun, run_id)
+        if run is None:
+            logger.warning("Skipping Survey_All_Progress export, run %s not found", run_id)
+            return
+        responses = await get_responses_for_run(session, run_id)
+
+    exported_at_utc = datetime.utcnow().isoformat()
+    row = build_all_progress_row(
+        data=data,
+        run=run,
+        responses=responses,
+        exported_at_utc=exported_at_utc,
+        current_department_code=current_department_code,
+        current_question_code=current_question_code,
+        progress_step=len(responses),
+    )
+    try:
+        await sheets.upsert_all_progress_row(row)
+    except Exception:
+        logger.exception(
+            "Failed to export Survey_All_Progress for survey_run_id=%s",
+            run_id,
+        )
 
 
 async def maybe_send_department_visual(message: Message, department: Department) -> None:
@@ -275,6 +349,16 @@ async def finish_survey(message: Message, state: FSMContext) -> None:
 
     try:
         submitted_at_utc = datetime.utcnow().isoformat()
+        progress_row = build_all_progress_row(
+            data=data,
+            run=run,
+            responses=responses,
+            exported_at_utc=submitted_at_utc,
+            current_department_code="",
+            current_question_code="",
+            progress_step=len(responses),
+        )
+        await sheets.upsert_all_progress_row(progress_row)
         wide_row = build_wide_row(
             data=data,
             run=run,
@@ -467,6 +551,12 @@ async def handle_department_contact(callback: CallbackQuery, state: FSMContext) 
             answer_text=answer_text,
         )
         await session.commit()
+    await export_progress_snapshot(
+        state=state,
+        run_id=run_id,
+        current_department_code=department.code,
+        current_question_code="contact",
+    )
 
     if decision == "no":
         await move_to_next_department(callback.message, state)
@@ -500,6 +590,12 @@ async def handle_department_question(callback: CallbackQuery, state: FSMContext)
             answer_text=option.text[str(data["lang"])],
         )
         await session.commit()
+    await export_progress_snapshot(
+        state=state,
+        run_id=run_id,
+        current_department_code=department.code,
+        current_question_code=question.code,
+    )
 
     next_q_idx = int(data["q_idx"]) + 1
     if next_q_idx < len(department.questions):
@@ -566,6 +662,12 @@ async def handle_dispatcher_rating(callback: CallbackQuery, state: FSMContext) -
             related_dispatcher_name_snapshot=str(dispatcher_data["full_name"]),
         )
         await session.commit()
+    await export_progress_snapshot(
+        state=state,
+        run_id=int(data["run_id"]),
+        current_department_code="dispatch",
+        current_question_code=question_code,
+    )
 
     next_dispatcher_idx = dispatcher_idx + 1
     if next_dispatcher_idx < len(dispatchers):
@@ -608,5 +710,11 @@ async def handle_department_feedback_text(message: Message, state: FSMContext) -
             answer_text=feedback_text,
         )
         await session.commit()
+    await export_progress_snapshot(
+        state=state,
+        run_id=int(data["run_id"]),
+        current_department_code=department.code,
+        current_question_code="feedback",
+    )
 
     await move_to_next_department(message, state)

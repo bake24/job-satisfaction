@@ -18,6 +18,7 @@ SCOPES = [
 
 WIDE_SHEET = "Survey_Wide"
 DRIVER_STATUS_SHEET = "Drivers_Status"
+ALL_PROGRESS_SHEET = "Survey_All_Progress"
 
 
 def wide_columns() -> list[str]:
@@ -90,6 +91,83 @@ def wide_columns() -> list[str]:
     ]
 
 
+def all_progress_columns() -> list[str]:
+    return [
+        "survey_run_id",
+        "status",
+        "started_at_utc",
+        "last_updated_at_utc",
+        "completed_at_utc",
+        "survey_year",
+        "survey_quarter",
+        "survey_period_label",
+        "driver_id",
+        "telegram_user_id",
+        "language",
+        "unit_number",
+        "first_name",
+        "last_name",
+        "current_department",
+        "current_question_code",
+        "progress_step",
+        "dispatcher_1_name",
+        "dispatcher_2_name",
+        "dispatcher_3_name",
+        "hr_q1",
+        "hr_q2",
+        "hr_q3",
+        "hr_q4",
+        "hr_q5",
+        "hr_feedback",
+        "safety_q1",
+        "safety_q2",
+        "safety_q3",
+        "safety_q4",
+        "safety_q5",
+        "safety_feedback",
+        "hos_q1",
+        "hos_q2",
+        "hos_q3",
+        "hos_q4",
+        "hos_q5",
+        "hos_feedback",
+        "claims_contact",
+        "claims_q1",
+        "claims_q2",
+        "claims_q3",
+        "claims_q4",
+        "claims_q5",
+        "claims_feedback",
+        "fleet_q1",
+        "fleet_q2",
+        "fleet_q3",
+        "fleet_q4",
+        "fleet_q5",
+        "fleet_feedback",
+        "dispatch_q1",
+        "dispatch_q2",
+        "dispatch_q3",
+        "dispatch_q4",
+        "dispatch_q5",
+        "dispatcher_1_rating",
+        "dispatcher_2_rating",
+        "dispatcher_3_rating",
+        "dispatch_feedback",
+        "accounting_q1",
+        "accounting_q2",
+        "accounting_q3",
+        "accounting_q4",
+        "accounting_q5",
+        "accounting_feedback",
+        "management_q1",
+        "management_q2",
+        "management_q3",
+        "management_q4",
+        "management_q5",
+        "management_feedback",
+    ]
+
+
 def driver_status_columns() -> list[str]:
     return [
         "driver_id",
@@ -128,6 +206,12 @@ class SheetsExporter:
             return
         await asyncio.to_thread(self._append_wide_row_sync, client, row_data)
 
+    async def upsert_all_progress_row(self, row_data: dict[str, Any]) -> None:
+        client = self._build_client()
+        if not client:
+            return
+        await asyncio.to_thread(self._upsert_all_progress_row_sync, client, row_data)
+
     async def upsert_driver_status_row(self, row_data: dict[str, Any]) -> None:
         client = self._build_client()
         if not client:
@@ -141,6 +225,20 @@ class SheetsExporter:
         headers = ws.row_values(1)
         row_values = [str(row_data.get(column, "")) for column in headers]
         ws.append_row(row_values, value_input_option="RAW")
+
+    def _upsert_all_progress_row_sync(self, client: gspread.Client, row_data: dict[str, Any]) -> None:
+        book = client.open_by_key(self.settings.google_sheet_id)
+        ws = self._get_or_create_ws(book, ALL_PROGRESS_SHEET, all_progress_columns())
+        self._ensure_headers(ws, all_progress_columns())
+        headers = ws.row_values(1)
+        survey_run_id = str(row_data.get("survey_run_id", ""))
+        existing_row_idx = self._find_row_by_first_column(ws, survey_run_id)
+        row_values = [str(row_data.get(column, "")) for column in headers]
+        if existing_row_idx is None:
+            ws.append_row(row_values, value_input_option="RAW")
+        else:
+            cell_range = f"A{existing_row_idx}:{self._column_letter(len(headers))}{existing_row_idx}"
+            ws.update(cell_range, [row_values], value_input_option="RAW")
 
     def _upsert_driver_status_row_sync(self, client: gspread.Client, row_data: dict[str, Any]) -> None:
         book = client.open_by_key(self.settings.google_sheet_id)
