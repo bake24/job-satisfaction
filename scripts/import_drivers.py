@@ -60,7 +60,7 @@ def parse_row(raw: dict[str, str], headers: dict[str, str]) -> DriverImportRow |
         return None
 
     dispatchers: list[DispatcherSlotInput] = []
-    for slot in (1, 2, 3):
+    for slot in (1, 2, 3, 4):
         d_first_key = headers.get(f"dispatcher_{slot}_first_name")
         d_last_key = headers.get(f"dispatcher_{slot}_last_name")
         if not d_first_key or not d_last_key:

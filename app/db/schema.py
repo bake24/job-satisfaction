@@ -111,7 +111,7 @@ async def _bootstrap_sqlite(conn: AsyncConnection) -> None:
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 CONSTRAINT uq_driver_dispatcher_slot UNIQUE (driver_id, slot_number),
                 CONSTRAINT uq_driver_dispatcher_pair UNIQUE (driver_id, dispatcher_id),
-                CONSTRAINT ck_driver_dispatchers_slot_range CHECK (slot_number >= 1 AND slot_number <= 3),
+                CONSTRAINT ck_driver_dispatchers_slot_range CHECK (slot_number >= 1 AND slot_number <= 4),
                 FOREIGN KEY(driver_id) REFERENCES drivers(id) ON DELETE CASCADE,
                 FOREIGN KEY(dispatcher_id) REFERENCES dispatchers(id) ON DELETE CASCADE
             )

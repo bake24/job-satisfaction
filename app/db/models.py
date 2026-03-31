@@ -78,7 +78,7 @@ class DriverDispatcher(Base, TimestampMixin):
     __table_args__ = (
         UniqueConstraint("driver_id", "slot_number", name="uq_driver_dispatcher_slot"),
         UniqueConstraint("driver_id", "dispatcher_id", name="uq_driver_dispatcher_pair"),
-        CheckConstraint("slot_number >= 1 AND slot_number <= 3", name="ck_driver_dispatchers_slot_range"),
+        CheckConstraint("slot_number >= 1 AND slot_number <= 4", name="ck_driver_dispatchers_slot_range"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
