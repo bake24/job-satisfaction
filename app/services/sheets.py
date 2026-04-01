@@ -72,11 +72,9 @@ def wide_columns() -> list[str]:
         "dispatcher_1_name",
         "dispatcher_2_name",
         "dispatcher_3_name",
-        "dispatcher_4_name",
         "dispatcher_1_rating",
         "dispatcher_2_rating",
         "dispatcher_3_rating",
-        "dispatcher_4_rating",
         "dispatch_feedback",
         "accounting_q1",
         "accounting_q2",
@@ -90,6 +88,8 @@ def wide_columns() -> list[str]:
         "management_q4",
         "management_q5",
         "management_feedback",
+        "dispatcher_4_name",
+        "dispatcher_4_rating",
     ]
 
 
@@ -115,7 +115,6 @@ def all_progress_columns() -> list[str]:
         "dispatcher_1_name",
         "dispatcher_2_name",
         "dispatcher_3_name",
-        "dispatcher_4_name",
         "hr_q1",
         "hr_q2",
         "hr_q3",
@@ -155,7 +154,6 @@ def all_progress_columns() -> list[str]:
         "dispatcher_1_rating",
         "dispatcher_2_rating",
         "dispatcher_3_rating",
-        "dispatcher_4_rating",
         "dispatch_feedback",
         "accounting_q1",
         "accounting_q2",
@@ -169,6 +167,8 @@ def all_progress_columns() -> list[str]:
         "management_q4",
         "management_q5",
         "management_feedback",
+        "dispatcher_4_name",
+        "dispatcher_4_rating",
     ]
 
 
@@ -182,10 +182,10 @@ def driver_status_columns() -> list[str]:
         "dispatcher_1_name",
         "dispatcher_2_name",
         "dispatcher_3_name",
-        "dispatcher_4_name",
         "current_period_submitted",
         "current_period_submitted_at",
         "current_period_status",
+        "dispatcher_4_name",
     ]
 
 
