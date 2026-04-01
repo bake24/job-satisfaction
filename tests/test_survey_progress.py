@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import unittest
 from datetime import datetime, timezone
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from app.db.models import Response, SurveyRun
-from app.handlers.survey import build_all_progress_row, build_wide_row
+from app.handlers.survey import build_all_progress_row, build_wide_row, export_completed_run_to_sheets
 from app.services.sheets import SheetsExporter, all_progress_columns, wide_columns
 
 
@@ -210,23 +210,67 @@ class SheetsExporterTests(unittest.TestCase):
         self.assertEqual(ws.rows[1][status_idx], "completed")
         self.assertEqual(ws.rows[1][claims_q1_idx], "9")
 
-    def test_append_wide_row_remains_append_only(self) -> None:
+    def test_upsert_wide_row_updates_same_driver_quarter_row(self) -> None:
         first = {column: "" for column in wide_columns()}
-        first.update({"driver_id": "301", "hr_q1": "7"})
+        first.update({"driver_id": "301", "survey_year": "2026", "survey_quarter": "1", "hr_q1": "7"})
         second = {column: "" for column in wide_columns()}
-        second.update({"driver_id": "301", "hr_q1": "9"})
+        second.update({"driver_id": "301", "survey_year": "2026", "survey_quarter": "1", "hr_q1": "9"})
 
-        self.exporter._append_wide_row_sync(self.fake_client, first)
-        self.exporter._append_wide_row_sync(self.fake_client, second)
+        self.exporter._upsert_wide_row_sync(self.fake_client, first)
+        self.exporter._upsert_wide_row_sync(self.fake_client, second)
 
         ws = self.fake_client.book.sheets["Survey_Wide"]
-        self.assertEqual(len(ws.rows), 3)
+        self.assertEqual(len(ws.rows), 2)
         driver_id_idx = wide_columns().index("driver_id")
         hr_q1_idx = wide_columns().index("hr_q1")
         self.assertEqual(ws.rows[1][driver_id_idx], "301")
-        self.assertEqual(ws.rows[2][driver_id_idx], "301")
-        self.assertEqual(ws.rows[1][hr_q1_idx], "7")
-        self.assertEqual(ws.rows[2][hr_q1_idx], "9")
+        self.assertEqual(ws.rows[1][hr_q1_idx], "9")
+
+
+class CompletedExportTests(unittest.IsolatedAsyncioTestCase):
+    async def test_completed_export_continues_after_progress_failure(self) -> None:
+        data = {
+            "lang": "en",
+            "unit_number": "0037",
+            "first_name": "Farukh",
+            "last_name": "Rajabov",
+            "assigned_dispatchers": [
+                {"slot_number": 1, "full_name": "Charlie Ral"},
+            ],
+        }
+        run = make_run(status="completed", completed_at=datetime(2026, 3, 30, 12, 30, tzinfo=timezone.utc))
+        responses = [make_response("dispatch", "dispatcher_1_rating", "10", "10")]
+
+        with (
+            patch("app.handlers.survey.get_export_record", new=AsyncMock(return_value=None)),
+            patch("app.handlers.survey.record_export_success", new=AsyncMock()),
+            patch("app.handlers.survey.record_export_failure", new=AsyncMock()),
+            patch.object(
+                __import__("app.handlers.survey", fromlist=["sheets"]).sheets,
+                "upsert_all_progress_row",
+                new=AsyncMock(side_effect=RuntimeError("quota")),
+            ) as progress_mock,
+            patch.object(
+                __import__("app.handlers.survey", fromlist=["sheets"]).sheets,
+                "upsert_wide_row",
+                new=AsyncMock(),
+            ) as wide_mock,
+            patch.object(
+                __import__("app.handlers.survey", fromlist=["sheets"]).sheets,
+                "upsert_driver_status_row",
+                new=AsyncMock(),
+            ) as status_mock,
+        ):
+            await export_completed_run_to_sheets(
+                data=data,
+                run=run,
+                responses=responses,
+                submitted_at_utc="2026-03-30T12:31:00+00:00",
+            )
+
+        self.assertEqual(progress_mock.await_count, 1)
+        self.assertEqual(wide_mock.await_count, 1)
+        self.assertEqual(status_mock.await_count, 1)
 
 
 if __name__ == "__main__":

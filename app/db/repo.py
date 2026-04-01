@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Dispatcher, Driver, DriverDispatcher, Response, SurveyRun, TelegramUser
+from app.db.models import Dispatcher, Driver, DriverDispatcher, Response, SurveyExport, SurveyRun, TelegramUser
 
 
 async def get_or_create_user(session: AsyncSession, telegram_id: int, language: str) -> TelegramUser:
@@ -69,6 +69,7 @@ async def create_run(
     unit_number: str,
     first_name: str,
     last_name: str,
+    language: str | None = None,
 ) -> SurveyRun:
     run = SurveyRun(
         telegram_user_id=telegram_user_id,
@@ -78,6 +79,7 @@ async def create_run(
         first_name=first_name.strip(),
         last_name=last_name.strip(),
         status="in_progress",
+        language=language,
     )
     session.add(run)
     await session.flush()
@@ -153,5 +155,42 @@ async def reset_run(session: AsyncSession, run: SurveyRun, unit_number: str, fir
     result = await session.execute(select(Response).where(Response.survey_run_id == run.id))
     for resp in result.scalars().all():
         await session.delete(resp)
+    await session.flush()
+
+
+async def get_export_record(session: AsyncSession, run_id: int, target: str) -> SurveyExport | None:
+    result = await session.execute(
+        select(SurveyExport).where(
+            SurveyExport.survey_run_id == run_id,
+            SurveyExport.target == target,
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def get_or_create_export_record(session: AsyncSession, run_id: int, target: str) -> SurveyExport:
+    existing = await get_export_record(session, run_id, target)
+    if existing:
+        return existing
+
+    export = SurveyExport(survey_run_id=run_id, target=target)
+    session.add(export)
+    await session.flush()
+    return export
+
+
+async def mark_export_success(session: AsyncSession, run_id: int, target: str) -> None:
+    export = await get_or_create_export_record(session, run_id, target)
+    export.status = "completed"
+    export.last_attempt_at = datetime.now(timezone.utc)
+    export.error_message = None
+    await session.flush()
+
+
+async def mark_export_failure(session: AsyncSession, run_id: int, target: str, error_message: str) -> None:
+    export = await get_or_create_export_record(session, run_id, target)
+    export.status = "failed"
+    export.last_attempt_at = datetime.now(timezone.utc)
+    export.error_message = error_message[:2000]
     await session.flush()
 

@@ -9,18 +9,21 @@ from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-from app.db.models import Driver, Response, SurveyRun
+from app.db.models import Driver, Response, SurveyRun, TelegramUser
 from app.db.repo import (
     add_response,
     complete_run,
     create_run,
     get_driver_by_id,
+    get_export_record,
     get_or_create_user,
     get_responses_for_run,
     get_run_for_driver_month,
     get_user_by_telegram_id,
     list_active_driver_dispatchers,
     list_drivers_by_unit,
+    mark_export_failure,
+    mark_export_success,
     reset_run,
     run_has_responses,
 )
@@ -36,6 +39,9 @@ logger = logging.getLogger(__name__)
 router = Router()
 catalog = SurveyCatalog(Path(__file__).resolve().parents[1] / "data" / "survey.json")
 sheets = SheetsExporter()
+ALL_PROGRESS_TARGET = "survey_all_progress"
+WIDE_TARGET = "survey_wide"
+DRIVER_STATUS_TARGET = "driver_status"
 
 
 def month_key() -> str:
@@ -200,6 +206,105 @@ async def maybe_send_department_visual(message: Message, department: Department)
         await message.answer(department.sticker_emoji)
 
 
+async def load_run_export_bundle(run_id: int) -> tuple[SurveyRun, list[Response], dict[str, object]] | None:
+    async with SessionLocal() as session:
+        run = await session.get(SurveyRun, run_id)
+        if run is None:
+            return None
+        user = await session.get(TelegramUser, run.telegram_user_id)
+        dispatcher_rows = await list_active_driver_dispatchers(session, run.driver_id)
+        responses = await get_responses_for_run(session, run_id)
+
+    data: dict[str, object] = {
+        "lang": run.language or (user.language if user and user.language else "en"),
+        "unit_number": run.unit_number,
+        "first_name": run.first_name,
+        "last_name": run.last_name,
+        "assigned_dispatchers": [
+            {
+                "slot_number": slot_number,
+                "dispatcher_id": dispatcher_id,
+                "full_name": f"{first_name} {last_name}".strip(),
+            }
+            for slot_number, dispatcher_id, first_name, last_name in dispatcher_rows
+        ],
+    }
+    return run, responses, data
+
+
+async def record_export_success(run_id: int, target: str) -> None:
+    async with SessionLocal() as session:
+        await mark_export_success(session, run_id, target)
+        await session.commit()
+
+
+async def record_export_failure(run_id: int, target: str, exc: Exception) -> None:
+    async with SessionLocal() as session:
+        await mark_export_failure(session, run_id, target, str(exc))
+        await session.commit()
+
+
+async def export_sheet_target(run_id: int, target: str, exporter, description: str) -> bool:
+    async with SessionLocal() as session:
+        export_record = await get_export_record(session, run_id, target)
+        if export_record and export_record.status == "completed":
+            return True
+
+    try:
+        await exporter()
+    except Exception as exc:
+        logger.exception("Failed to export %s for survey_run_id=%s", description, run_id)
+        await record_export_failure(run_id, target, exc)
+        return False
+
+    await record_export_success(run_id, target)
+    return True
+
+
+async def export_completed_run_to_sheets(
+    data: dict[str, object],
+    run: SurveyRun,
+    responses: list[Response],
+    submitted_at_utc: str,
+) -> None:
+    progress_row = build_all_progress_row(
+        data=data,
+        run=run,
+        responses=responses,
+        exported_at_utc=submitted_at_utc,
+        current_department_code="",
+        current_question_code="",
+        progress_step=len(responses),
+    )
+    await export_sheet_target(
+        run.id,
+        ALL_PROGRESS_TARGET,
+        lambda: sheets.upsert_all_progress_row(progress_row),
+        "Survey_All_Progress",
+    )
+
+    wide_row = build_wide_row(
+        data=data,
+        run=run,
+        responses=responses,
+        submitted_at_utc=submitted_at_utc,
+    )
+    await export_sheet_target(
+        run.id,
+        WIDE_TARGET,
+        lambda: sheets.upsert_wide_row(wide_row),
+        "Survey_Wide",
+    )
+
+    driver_status_row = build_driver_status_row(data=data, run=run)
+    await export_sheet_target(
+        run.id,
+        DRIVER_STATUS_TARGET,
+        lambda: sheets.upsert_driver_status_row(driver_status_row),
+        "Drivers_Status",
+    )
+
+
 async def ask_department_contact(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     lang = str(data["lang"])
@@ -298,6 +403,7 @@ async def begin_or_lock_run(message: Message, state: FSMContext, lang: str, driv
 
         if existing:
             await reset_run(session, existing, driver.unit_number, driver.first_name, driver.last_name)
+            existing.language = lang
             run = existing
         else:
             run = await create_run(
@@ -308,6 +414,7 @@ async def begin_or_lock_run(message: Message, state: FSMContext, lang: str, driv
                 unit_number=driver.unit_number,
                 first_name=driver.first_name,
                 last_name=driver.last_name,
+                language=lang,
             )
         await session.commit()
 
@@ -347,29 +454,8 @@ async def finish_survey(message: Message, state: FSMContext) -> None:
         responses = await get_responses_for_run(session, run_id)
         await session.commit()
 
-    try:
-        submitted_at_utc = datetime.utcnow().isoformat()
-        progress_row = build_all_progress_row(
-            data=data,
-            run=run,
-            responses=responses,
-            exported_at_utc=submitted_at_utc,
-            current_department_code="",
-            current_question_code="",
-            progress_step=len(responses),
-        )
-        await sheets.upsert_all_progress_row(progress_row)
-        wide_row = build_wide_row(
-            data=data,
-            run=run,
-            responses=responses,
-            submitted_at_utc=submitted_at_utc,
-        )
-        await sheets.append_wide_row(wide_row)
-        driver_status_row = build_driver_status_row(data=data, run=run)
-        await sheets.upsert_driver_status_row(driver_status_row)
-    except Exception:
-        logger.exception("Failed to export survey results to Google Sheets")
+    submitted_at_utc = datetime.utcnow().isoformat()
+    await export_completed_run_to_sheets(data=data, run=run, responses=responses, submitted_at_utc=submitted_at_utc)
 
     await message.answer(t("thanks", str(data["lang"])), reply_markup=main_menu_kb(str(data["lang"])))
     await state.clear()

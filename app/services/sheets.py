@@ -192,24 +192,38 @@ def driver_status_columns() -> list[str]:
 class SheetsExporter:
     def __init__(self) -> None:
         self.settings = get_settings()
+        self._client: gspread.Client | None = None
+        self._book: gspread.Spreadsheet | None = None
 
     def _build_client(self) -> gspread.Client | None:
+        if self._client is not None:
+            return self._client
         if not self.settings.google_sheet_id:
             return None
         if self.settings.google_service_account_json:
             payload = json.loads(self.settings.google_service_account_json)
             creds = Credentials.from_service_account_info(payload, scopes=SCOPES)
-            return gspread.authorize(creds)
+            self._client = gspread.authorize(creds)
+            return self._client
         if self.settings.google_service_account_file:
             creds = Credentials.from_service_account_file(self.settings.google_service_account_file, scopes=SCOPES)
-            return gspread.authorize(creds)
+            self._client = gspread.authorize(creds)
+            return self._client
         return None
 
+    def _open_book(self, client: gspread.Client) -> gspread.Spreadsheet:
+        if self._book is None:
+            self._book = client.open_by_key(self.settings.google_sheet_id)
+        return self._book
+
     async def append_wide_row(self, row_data: dict[str, Any]) -> None:
+        await self.upsert_wide_row(row_data)
+
+    async def upsert_wide_row(self, row_data: dict[str, Any]) -> None:
         client = self._build_client()
         if not client:
             return
-        await asyncio.to_thread(self._append_wide_row_sync, client, row_data)
+        await asyncio.to_thread(self._upsert_wide_row_sync, client, row_data)
 
     async def upsert_all_progress_row(self, row_data: dict[str, Any]) -> None:
         client = self._build_client()
@@ -223,16 +237,21 @@ class SheetsExporter:
             return
         await asyncio.to_thread(self._upsert_driver_status_row_sync, client, row_data)
 
-    def _append_wide_row_sync(self, client: gspread.Client, row_data: dict[str, Any]) -> None:
-        book = client.open_by_key(self.settings.google_sheet_id)
+    def _upsert_wide_row_sync(self, client: gspread.Client, row_data: dict[str, Any]) -> None:
+        book = self._open_book(client)
         ws = self._get_or_create_ws(book, WIDE_SHEET, wide_columns())
         self._ensure_headers(ws, wide_columns())
         headers = ws.row_values(1)
         row_values = [str(row_data.get(column, "")) for column in headers]
-        ws.append_row(row_values, value_input_option="RAW")
+        existing_row_idx = self._find_wide_row(ws, headers, row_data)
+        if existing_row_idx is None:
+            ws.append_row(row_values, value_input_option="RAW")
+        else:
+            cell_range = f"A{existing_row_idx}:{self._column_letter(len(headers))}{existing_row_idx}"
+            ws.update(cell_range, [row_values], value_input_option="RAW")
 
     def _upsert_all_progress_row_sync(self, client: gspread.Client, row_data: dict[str, Any]) -> None:
-        book = client.open_by_key(self.settings.google_sheet_id)
+        book = self._open_book(client)
         ws = self._get_or_create_ws(book, ALL_PROGRESS_SHEET, all_progress_columns())
         self._ensure_headers(ws, all_progress_columns())
         headers = ws.row_values(1)
@@ -246,7 +265,7 @@ class SheetsExporter:
             ws.update(cell_range, [row_values], value_input_option="RAW")
 
     def _upsert_driver_status_row_sync(self, client: gspread.Client, row_data: dict[str, Any]) -> None:
-        book = client.open_by_key(self.settings.google_sheet_id)
+        book = self._open_book(client)
         ws = self._get_or_create_ws(book, DRIVER_STATUS_SHEET, driver_status_columns())
         self._ensure_headers(ws, driver_status_columns())
         headers = ws.row_values(1)
@@ -282,6 +301,26 @@ class SheetsExporter:
         for idx, value in enumerate(col_values[1:], start=2):
             if value == first_value:
                 return idx
+        return None
+
+    def _find_wide_row(self, ws: gspread.Worksheet, headers: list[str], row_data: dict[str, Any]) -> int | None:
+        driver_id = str(row_data.get("driver_id", ""))
+        survey_year = str(row_data.get("survey_year", ""))
+        survey_quarter = str(row_data.get("survey_quarter", ""))
+        if not driver_id or not survey_year or not survey_quarter:
+            return None
+
+        driver_id_idx = headers.index("driver_id") + 1
+        survey_year_idx = headers.index("survey_year") + 1
+        survey_quarter_idx = headers.index("survey_quarter") + 1
+        for row_idx, candidate_driver_id in enumerate(ws.col_values(driver_id_idx)[1:], start=2):
+            if candidate_driver_id != driver_id:
+                continue
+            row_values = ws.row_values(row_idx)
+            candidate_year = row_values[survey_year_idx - 1] if len(row_values) >= survey_year_idx else ""
+            candidate_quarter = row_values[survey_quarter_idx - 1] if len(row_values) >= survey_quarter_idx else ""
+            if candidate_year == survey_year and candidate_quarter == survey_quarter:
+                return row_idx
         return None
 
     def _column_letter(self, index: int) -> str:
