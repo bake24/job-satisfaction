@@ -210,6 +210,15 @@ def build_driver_status_row(data: dict[str, object], run: SurveyRun) -> dict[str
     return row
 
 
+def build_external_driver_status_row(data: dict[str, object], run: SurveyRun) -> dict[str, str]:
+    return {
+        "unit_number": str(data["unit_number"]),
+        "first_name": str(data["first_name"]),
+        "last_name": str(data["last_name"]),
+        "status": "Completed" if run.status == "completed" else "Started, but didn't finish",
+    }
+
+
 async def prime_run_state(
     state: FSMContext,
     run: SurveyRun,
@@ -354,6 +363,14 @@ async def export_progress_snapshot(
             "Failed to export Survey_All_Progress for survey_run_id=%s",
             run_id,
         )
+    external_status_row = build_external_driver_status_row(data=data, run=run)
+    try:
+        await sheets.upsert_external_driver_status_row(external_status_row)
+    except Exception:
+        logger.exception(
+            "Failed to export external Driver_Status for survey_run_id=%s",
+            run_id,
+        )
 
 
 async def maybe_send_department_visual(message: Message, department: Department) -> None:
@@ -464,6 +481,12 @@ async def export_completed_run_to_sheets(
         lambda: sheets.upsert_driver_status_row(driver_status_row),
         "Drivers_Status",
     )
+
+    external_status_row = build_external_driver_status_row(data=data, run=run)
+    try:
+        await sheets.upsert_external_driver_status_row(external_status_row)
+    except Exception:
+        logger.exception("Failed to export external Driver_Status for survey_run_id=%s", run.id)
 
 
 async def ask_department_contact(message: Message, state: FSMContext) -> None:

@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, patch
 from app.db.models import Driver, Response, SurveyRun
 from app.handlers.survey import (
     begin_or_lock_run,
+    build_external_driver_status_row,
     build_all_progress_row,
     build_wide_row,
     catalog,
@@ -16,7 +17,7 @@ from app.handlers.survey import (
     resume_existing_run,
 )
 from app.states import SurveyStates
-from app.services.sheets import SheetsExporter, all_progress_columns, wide_columns
+from app.services.sheets import SheetsExporter, all_progress_columns, external_driver_status_columns, wide_columns
 
 
 class FakeWorksheet:
@@ -46,6 +47,9 @@ class FakeWorksheet:
             else:
                 result.append("")
         return result
+
+    def get_all_values(self) -> list[list[str]]:
+        return [list(row) for row in self.rows]
 
 
 class FakeBook:
@@ -226,6 +230,13 @@ class ProgressBuilderTests(unittest.TestCase):
         self.assertEqual(row["hr_q1"], "7")
         self.assertEqual(row["dispatcher_1_name"], "Charlie Ral")
 
+    def test_build_external_driver_status_row_maps_status_labels(self) -> None:
+        completed_row = build_external_driver_status_row(self.data, make_run(status="completed"))
+        started_row = build_external_driver_status_row(self.data, make_run(status="in_progress"))
+
+        self.assertEqual(completed_row["status"], "Completed")
+        self.assertEqual(started_row["status"], "Started, but didn't finish")
+
 
 class ResumeResolverTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -312,6 +323,7 @@ class SheetsExporterTests(unittest.TestCase):
             (),
             {
                 "google_sheet_id": "sheet-id",
+                "google_driver_status_sheet_id": None,
                 "google_service_account_json": None,
                 "google_service_account_file": None,
             },
@@ -349,6 +361,35 @@ class SheetsExporterTests(unittest.TestCase):
         hr_q1_idx = wide_columns().index("hr_q1")
         self.assertEqual(ws.rows[1][driver_id_idx], "301")
         self.assertEqual(ws.rows[1][hr_q1_idx], "9")
+
+    def test_external_driver_status_uses_upsert(self) -> None:
+        self.exporter.settings.google_driver_status_sheet_id = "external-sheet-id"
+        first = {column: "" for column in external_driver_status_columns()}
+        first.update(
+            {
+                "unit_number": "0037",
+                "first_name": "Farukh",
+                "last_name": "Rajabov",
+                "status": "Started, but didn't finish",
+            }
+        )
+        second = {column: "" for column in external_driver_status_columns()}
+        second.update(
+            {
+                "unit_number": "0037",
+                "first_name": "Farukh",
+                "last_name": "Rajabov",
+                "status": "Completed",
+            }
+        )
+
+        self.exporter._upsert_external_driver_status_row_sync(self.fake_client, first)
+        self.exporter._upsert_external_driver_status_row_sync(self.fake_client, second)
+
+        ws = self.fake_client.book.sheets["Driver_Status"]
+        self.assertEqual(len(ws.rows), 2)
+        status_idx = external_driver_status_columns().index("status")
+        self.assertEqual(ws.rows[1][status_idx], "Completed")
 
 
 class CompletedExportTests(unittest.IsolatedAsyncioTestCase):

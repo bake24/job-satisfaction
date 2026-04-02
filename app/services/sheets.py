@@ -19,6 +19,7 @@ SCOPES = [
 WIDE_SHEET = "Survey_Wide"
 DRIVER_STATUS_SHEET = "Drivers_Status"
 ALL_PROGRESS_SHEET = "Survey_All_Progress"
+EXTERNAL_DRIVER_STATUS_SHEET = "Driver_Status"
 
 
 def wide_columns() -> list[str]:
@@ -189,11 +190,20 @@ def driver_status_columns() -> list[str]:
     ]
 
 
+def external_driver_status_columns() -> list[str]:
+    return [
+        "unit_number",
+        "first_name",
+        "last_name",
+        "status",
+    ]
+
+
 class SheetsExporter:
     def __init__(self) -> None:
         self.settings = get_settings()
         self._client: gspread.Client | None = None
-        self._book: gspread.Spreadsheet | None = None
+        self._books: dict[str, gspread.Spreadsheet] = {}
 
     def _build_client(self) -> gspread.Client | None:
         if self._client is not None:
@@ -211,10 +221,13 @@ class SheetsExporter:
             return self._client
         return None
 
-    def _open_book(self, client: gspread.Client) -> gspread.Spreadsheet:
-        if self._book is None:
-            self._book = client.open_by_key(self.settings.google_sheet_id)
-        return self._book
+    def _open_book(self, client: gspread.Client, sheet_id: str | None = None) -> gspread.Spreadsheet:
+        target_sheet_id = sheet_id or self.settings.google_sheet_id
+        if not target_sheet_id:
+            raise RuntimeError("Google Sheets target ID is not configured")
+        if target_sheet_id not in self._books:
+            self._books[target_sheet_id] = client.open_by_key(target_sheet_id)
+        return self._books[target_sheet_id]
 
     async def append_wide_row(self, row_data: dict[str, Any]) -> None:
         await self.upsert_wide_row(row_data)
@@ -237,6 +250,12 @@ class SheetsExporter:
             return
         await asyncio.to_thread(self._upsert_driver_status_row_sync, client, row_data)
 
+    async def upsert_external_driver_status_row(self, row_data: dict[str, Any]) -> None:
+        client = self._build_client()
+        if not client or not self.settings.google_driver_status_sheet_id:
+            return
+        await asyncio.to_thread(self._upsert_external_driver_status_row_sync, client, row_data)
+
     def _upsert_wide_row_sync(self, client: gspread.Client, row_data: dict[str, Any]) -> None:
         book = self._open_book(client)
         ws = self._get_or_create_ws(book, WIDE_SHEET, wide_columns())
@@ -244,6 +263,24 @@ class SheetsExporter:
         headers = ws.row_values(1)
         row_values = [str(row_data.get(column, "")) for column in headers]
         existing_row_idx = self._find_wide_row(ws, headers, row_data)
+        if existing_row_idx is None:
+            ws.append_row(row_values, value_input_option="RAW")
+        else:
+            cell_range = f"A{existing_row_idx}:{self._column_letter(len(headers))}{existing_row_idx}"
+            ws.update(cell_range, [row_values], value_input_option="RAW")
+
+    def _upsert_external_driver_status_row_sync(self, client: gspread.Client, row_data: dict[str, Any]) -> None:
+        book = self._open_book(client, self.settings.google_driver_status_sheet_id)
+        ws = self._get_or_create_ws(book, EXTERNAL_DRIVER_STATUS_SHEET, external_driver_status_columns())
+        self._ensure_headers(ws, external_driver_status_columns())
+        headers = ws.row_values(1)
+        existing_row_idx = self._find_row_by_identity(
+            ws,
+            row_data.get("unit_number", ""),
+            row_data.get("first_name", ""),
+            row_data.get("last_name", ""),
+        )
+        row_values = [str(row_data.get(column, "")) for column in headers]
         if existing_row_idx is None:
             ws.append_row(row_values, value_input_option="RAW")
         else:
@@ -301,6 +338,21 @@ class SheetsExporter:
         for idx, value in enumerate(col_values[1:], start=2):
             if value == first_value:
                 return idx
+        return None
+
+    def _find_row_by_identity(self, ws: gspread.Worksheet, unit_number: Any, first_name: Any, last_name: Any) -> int | None:
+        unit = str(unit_number)
+        first = str(first_name)
+        last = str(last_name)
+        if not unit or not first or not last:
+            return None
+        all_rows = ws.get_all_values() if hasattr(ws, "get_all_values") else getattr(ws, "rows", [])
+        for row_idx, row_values in enumerate(all_rows[1:], start=2):
+            candidate_unit = row_values[0] if len(row_values) >= 1 else ""
+            candidate_first = row_values[1] if len(row_values) >= 2 else ""
+            candidate_last = row_values[2] if len(row_values) >= 3 else ""
+            if candidate_unit == unit and candidate_first == first and candidate_last == last:
+                return row_idx
         return None
 
     def _find_wide_row(self, ws: gspread.Worksheet, headers: list[str], row_data: dict[str, Any]) -> int | None:
