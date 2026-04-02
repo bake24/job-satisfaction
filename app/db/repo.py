@@ -136,7 +136,11 @@ async def complete_run(session: AsyncSession, run: SurveyRun) -> None:
 
 
 async def get_responses_for_run(session: AsyncSession, run_id: int) -> list[Response]:
-    result = await session.execute(select(Response).where(Response.survey_run_id == run_id))
+    result = await session.execute(
+        select(Response)
+        .where(Response.survey_run_id == run_id)
+        .order_by(Response.created_at, Response.id)
+    )
     return list(result.scalars().all())
 
 

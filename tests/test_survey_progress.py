@@ -2,10 +2,20 @@ from __future__ import annotations
 
 import unittest
 from datetime import datetime, timezone
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
-from app.db.models import Response, SurveyRun
-from app.handlers.survey import build_all_progress_row, build_wide_row, export_completed_run_to_sheets
+from app.db.models import Driver, Response, SurveyRun
+from app.handlers.survey import (
+    begin_or_lock_run,
+    build_all_progress_row,
+    build_wide_row,
+    catalog,
+    export_completed_run_to_sheets,
+    resolve_resume_target,
+    resume_existing_run,
+)
+from app.states import SurveyStates
 from app.services.sheets import SheetsExporter, all_progress_columns, wide_columns
 
 
@@ -94,6 +104,47 @@ def make_response(department: str, question_code: str, answer_code: str, answer_
     )
 
 
+def make_driver() -> Driver:
+    return Driver(id=301, unit_number="0037", first_name="Farukh", last_name="Rajabov", is_active=True)
+
+
+def responses_for_department(dep_code: str, assigned_dispatchers: list[dict[str, object]] | None = None) -> list[Response]:
+    department = next(dep for dep in catalog.departments if dep.code == dep_code)
+    responses: list[Response] = []
+    if department.requires_contact_gate:
+        responses.append(make_response(dep_code, "contact", "yes", "Yes"))
+    for question in department.questions:
+        responses.append(make_response(dep_code, question.code, "9", "9"))
+    if dep_code == "dispatch" and assigned_dispatchers:
+        for dispatcher in assigned_dispatchers:
+            responses.append(
+                make_response(
+                    dep_code,
+                    f"dispatcher_{dispatcher['slot_number']}_rating",
+                    "10",
+                    "10",
+                )
+            )
+    return responses
+
+
+class FakeState:
+    def __init__(self) -> None:
+        self.data: dict[str, object] = {}
+        self.state = None
+
+    async def update_data(self, **kwargs: object) -> None:
+        self.data.update(kwargs)
+
+    async def set_state(self, value) -> None:
+        self.state = value
+
+
+class FakeMessage:
+    def __init__(self) -> None:
+        self.answer = AsyncMock()
+
+
 class ProgressBuilderTests(unittest.TestCase):
     def setUp(self) -> None:
         self.data = {
@@ -174,6 +225,79 @@ class ProgressBuilderTests(unittest.TestCase):
         self.assertNotIn("survey_run_id", row)
         self.assertEqual(row["hr_q1"], "7")
         self.assertEqual(row["dispatcher_1_name"], "Charlie Ral")
+
+
+class ResumeResolverTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.assigned_dispatchers = [
+            {"slot_number": 1, "dispatcher_id": 1, "full_name": "Charlie Ral"},
+            {"slot_number": 2, "dispatcher_id": 2, "full_name": "Felix Ral"},
+        ]
+
+    def test_completed_run_is_blocked(self) -> None:
+        target = resolve_resume_target(make_run(status="completed"), [], self.assigned_dispatchers)
+        self.assertEqual(target.kind, "already_completed")
+
+    def test_no_answers_resumes_from_first_question(self) -> None:
+        target = resolve_resume_target(make_run(), [], self.assigned_dispatchers)
+        self.assertEqual(target.kind, "resume_department_question")
+        self.assertEqual(target.dep_idx, 0)
+        self.assertEqual(target.q_idx, 0)
+
+    def test_claims_contact_no_skips_to_next_department(self) -> None:
+        responses: list[Response] = []
+        for dep_code in ("hr", "safety", "hos"):
+            responses.extend(responses_for_department(dep_code, self.assigned_dispatchers))
+        responses.append(make_response("claims", "contact", "no", "No"))
+
+        target = resolve_resume_target(make_run(), responses, self.assigned_dispatchers)
+
+        self.assertEqual(target.kind, "resume_department_question")
+        self.assertEqual(catalog.departments[target.dep_idx].code, "fleet")
+        self.assertEqual(target.q_idx, 0)
+
+    def test_dispatch_partial_resumes_next_dispatcher_rating(self) -> None:
+        responses: list[Response] = []
+        for dep_code in ("hr", "safety", "hos", "claims", "fleet"):
+            responses.extend(responses_for_department(dep_code, self.assigned_dispatchers))
+        responses.extend(
+            [
+                make_response("dispatch", "q1", "9", "9"),
+                make_response("dispatch", "q2", "9", "9"),
+                make_response("dispatch", "q3", "9", "9"),
+                make_response("dispatch", "q4", "9", "9"),
+                make_response("dispatch", "q5", "9", "9"),
+                make_response("dispatch", "dispatcher_1_rating", "10", "10"),
+            ]
+        )
+
+        target = resolve_resume_target(make_run(), responses, self.assigned_dispatchers)
+
+        self.assertEqual(target.kind, "resume_dispatcher_rating")
+        self.assertEqual(target.dispatcher_idx, 1)
+        self.assertEqual(catalog.departments[target.dep_idx].code, "dispatch")
+
+    def test_ready_to_finish_when_all_required_answers_exist(self) -> None:
+        responses: list[Response] = []
+        for department in catalog.departments:
+            responses.extend(responses_for_department(department.code, self.assigned_dispatchers))
+
+        target = resolve_resume_target(make_run(), responses, self.assigned_dispatchers)
+
+        self.assertEqual(target.kind, "ready_to_finish")
+
+    def test_duplicate_answers_use_latest_persisted_value(self) -> None:
+        responses: list[Response] = []
+        for dep_code in ("hr", "safety", "hos"):
+            responses.extend(responses_for_department(dep_code, self.assigned_dispatchers))
+        responses.append(make_response("claims", "contact", "no", "No"))
+        responses.append(make_response("claims", "contact", "yes", "Yes"))
+
+        target = resolve_resume_target(make_run(), responses, self.assigned_dispatchers)
+
+        self.assertEqual(target.kind, "resume_department_question")
+        self.assertEqual(catalog.departments[target.dep_idx].code, "claims")
+        self.assertEqual(target.q_idx, 0)
 
 
 class SheetsExporterTests(unittest.TestCase):
@@ -271,6 +395,116 @@ class CompletedExportTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(progress_mock.await_count, 1)
         self.assertEqual(wide_mock.await_count, 1)
         self.assertEqual(status_mock.await_count, 1)
+
+
+class ResumeFlowTests(unittest.IsolatedAsyncioTestCase):
+    async def test_resume_existing_run_routes_to_next_question(self) -> None:
+        message = FakeMessage()
+        state = FakeState()
+        run = make_run()
+        responses = [make_response("hr", "q1", "9", "9")]
+        assigned_dispatchers = [{"slot_number": 1, "dispatcher_id": 1, "full_name": "Charlie Ral"}]
+
+        with (
+            patch("app.handlers.survey.ask_department_question", new=AsyncMock()) as ask_question,
+            patch("app.handlers.survey.ask_department_contact", new=AsyncMock()) as ask_contact,
+            patch("app.handlers.survey.ask_dispatcher_rating_question", new=AsyncMock()) as ask_dispatcher,
+            patch("app.handlers.survey.finish_survey", new=AsyncMock()) as finish_survey_mock,
+        ):
+            await resume_existing_run(message, state, "en", run, assigned_dispatchers, responses, 999001)
+
+        self.assertEqual(message.answer.await_count, 1)
+        self.assertEqual(ask_question.await_count, 1)
+        self.assertEqual(ask_contact.await_count, 0)
+        self.assertEqual(ask_dispatcher.await_count, 0)
+        self.assertEqual(finish_survey_mock.await_count, 0)
+        self.assertEqual(state.data["run_id"], run.id)
+        self.assertEqual(state.data["dep_idx"], 0)
+        self.assertEqual(state.data["q_idx"], 1)
+
+    async def test_resume_ready_to_finish_completes_run(self) -> None:
+        message = FakeMessage()
+        state = FakeState()
+        run = make_run()
+        assigned_dispatchers = [{"slot_number": 1, "dispatcher_id": 1, "full_name": "Charlie Ral"}]
+        responses: list[Response] = []
+        for department in catalog.departments:
+            responses.extend(responses_for_department(department.code, assigned_dispatchers))
+
+        with patch("app.handlers.survey.finish_survey", new=AsyncMock()) as finish_survey_mock:
+            await resume_existing_run(message, state, "en", run, assigned_dispatchers, responses, 999001)
+
+        self.assertEqual(finish_survey_mock.await_count, 1)
+        self.assertEqual(state.data["run_id"], run.id)
+
+    async def test_begin_or_lock_run_reuses_answered_in_progress_run(self) -> None:
+        message = FakeMessage()
+        state = FakeState()
+        driver = make_driver()
+        run = make_run()
+        user = SimpleNamespace(id=701, language="en")
+        responses = [make_response("hr", "q1", "9", "9")]
+
+        class FakeSession:
+            def __init__(self) -> None:
+                self.commit = AsyncMock()
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, exc_type, exc, tb):
+                return False
+
+        fake_session_factory = lambda: FakeSession()
+
+        with (
+            patch("app.handlers.survey.SessionLocal", new=fake_session_factory),
+            patch("app.handlers.survey.get_or_create_user", new=AsyncMock(return_value=user)),
+            patch("app.handlers.survey.get_run_for_driver_month", new=AsyncMock(return_value=run)),
+            patch(
+                "app.handlers.survey.list_active_driver_dispatchers",
+                new=AsyncMock(return_value=[(1, 1, "Charlie", "Ral")]),
+            ),
+            patch("app.handlers.survey.get_responses_for_run", new=AsyncMock(return_value=responses)),
+            patch("app.handlers.survey.reset_run", new=AsyncMock()) as reset_run_mock,
+            patch("app.handlers.survey.create_run", new=AsyncMock()) as create_run_mock,
+            patch("app.handlers.survey.resume_existing_run", new=AsyncMock()) as resume_existing_run_mock,
+        ):
+            await begin_or_lock_run(message, state, "en", driver, 999001)
+
+        self.assertEqual(reset_run_mock.await_count, 0)
+        self.assertEqual(create_run_mock.await_count, 0)
+        self.assertEqual(resume_existing_run_mock.await_count, 1)
+
+    async def test_begin_or_lock_run_keeps_completed_block(self) -> None:
+        message = FakeMessage()
+        state = FakeState()
+        driver = make_driver()
+        completed_run = make_run(status="completed", completed_at=datetime(2026, 3, 30, 12, 30, tzinfo=timezone.utc))
+        user = SimpleNamespace(id=701, language="en")
+
+        class FakeSession:
+            def __init__(self) -> None:
+                self.commit = AsyncMock()
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, exc_type, exc, tb):
+                return False
+
+        fake_session_factory = lambda: FakeSession()
+
+        with (
+            patch("app.handlers.survey.SessionLocal", new=fake_session_factory),
+            patch("app.handlers.survey.get_or_create_user", new=AsyncMock(return_value=user)),
+            patch("app.handlers.survey.get_run_for_driver_month", new=AsyncMock(return_value=completed_run)),
+            patch("app.handlers.survey.list_active_driver_dispatchers", new=AsyncMock(return_value=[])),
+        ):
+            await begin_or_lock_run(message, state, "en", driver, 999001)
+
+        self.assertEqual(message.answer.await_count, 2)
+        self.assertEqual(state.state, SurveyStates.waiting_unit)
 
 
 if __name__ == "__main__":

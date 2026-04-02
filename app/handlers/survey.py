@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
@@ -25,7 +26,6 @@ from app.db.repo import (
     mark_export_failure,
     mark_export_success,
     reset_run,
-    run_has_responses,
 )
 from app.db.session import SessionLocal
 from app.keyboards import driver_select_kb, language_kb, main_menu_kb, options_kb, yes_no_kb
@@ -44,6 +44,14 @@ WIDE_TARGET = "survey_wide"
 DRIVER_STATUS_TARGET = "driver_status"
 
 
+@dataclass(frozen=True)
+class ResumeTarget:
+    kind: str
+    dep_idx: int = 0
+    q_idx: int = 0
+    dispatcher_idx: int = 0
+
+
 def month_key() -> str:
     return datetime.now().strftime("%Y-%m")
 
@@ -58,6 +66,46 @@ def current_department(data: dict[str, object]) -> Department:
 
 def dispatcher_label(dispatcher_data: dict[str, object]) -> str:
     return str(dispatcher_data["full_name"])
+
+
+def latest_response_map(responses: list[Response]) -> dict[tuple[str, str], Response]:
+    result: dict[tuple[str, str], Response] = {}
+    for response in responses:
+        result[(response.department, response.question_code)] = response
+    return result
+
+
+def resolve_resume_target(
+    run: SurveyRun,
+    responses: list[Response],
+    assigned_dispatchers: list[dict[str, object]],
+) -> ResumeTarget:
+    if run.status == "completed":
+        return ResumeTarget("already_completed")
+
+    response_map = latest_response_map(responses)
+    for dep_idx, department in enumerate(catalog.departments):
+        if department.requires_contact_gate:
+            contact = response_map.get((department.code, "contact"))
+            if contact is None:
+                return ResumeTarget("resume_department_contact", dep_idx=dep_idx)
+            if contact.answer_code == "no":
+                continue
+
+        for q_idx, question in enumerate(department.questions):
+            if (department.code, question.code) not in response_map:
+                return ResumeTarget("resume_department_question", dep_idx=dep_idx, q_idx=q_idx)
+
+        if department.code == "dispatch":
+            for dispatcher_idx, dispatcher_data in enumerate(assigned_dispatchers):
+                question_code = f"dispatcher_{dispatcher_data['slot_number']}_rating"
+                if (department.code, question_code) not in response_map:
+                    return ResumeTarget("resume_dispatcher_rating", dep_idx=dep_idx, dispatcher_idx=dispatcher_idx)
+
+        if department.asks_department_feedback and (department.code, "feedback") not in response_map:
+            continue
+
+    return ResumeTarget("ready_to_finish")
 
 
 async def resolve_lang(state: FSMContext, telegram_id: int) -> str:
@@ -160,6 +208,119 @@ def build_driver_status_row(data: dict[str, object], run: SurveyRun) -> dict[str
         slot_number = int(dispatcher_data["slot_number"])
         row[f"dispatcher_{slot_number}_name"] = dispatcher_label(dispatcher_data)
     return row
+
+
+async def prime_run_state(
+    state: FSMContext,
+    run: SurveyRun,
+    lang: str,
+    assigned_dispatchers: list[dict[str, object]],
+    telegram_id: int,
+    *,
+    dep_idx: int,
+    q_idx: int,
+    dispatcher_idx: int,
+    scale_notice_shown: bool,
+) -> None:
+    await state.update_data(
+        run_id=run.id,
+        dep_idx=dep_idx,
+        q_idx=q_idx,
+        dispatcher_idx=dispatcher_idx,
+        assigned_dispatchers=assigned_dispatchers,
+        scale_notice_shown=scale_notice_shown,
+        lang=lang,
+        telegram_id=telegram_id,
+        survey_month=run.survey_month,
+        unit_number=run.unit_number,
+        first_name=run.first_name,
+        last_name=run.last_name,
+    )
+
+
+async def resume_existing_run(
+    message: Message,
+    state: FSMContext,
+    lang: str,
+    run: SurveyRun,
+    assigned_dispatchers: list[dict[str, object]],
+    responses: list[Response],
+    telegram_id: int,
+) -> None:
+    target = resolve_resume_target(run, responses, assigned_dispatchers)
+
+    if target.kind == "already_completed":
+        await message.answer(t("already_completed", lang), reply_markup=main_menu_kb(lang))
+        await message.answer(t("ask_unit", lang), reply_markup=main_menu_kb(lang))
+        await state.set_state(SurveyStates.waiting_unit)
+        return
+
+    await message.answer(t("resume_in_progress", lang), reply_markup=main_menu_kb(lang))
+
+    scale_notice_shown = bool(responses)
+
+    if target.kind == "ready_to_finish":
+        await prime_run_state(
+            state,
+            run,
+            lang,
+            assigned_dispatchers,
+            telegram_id,
+            dep_idx=max(0, len(catalog.departments) - 1),
+            q_idx=0,
+            dispatcher_idx=0,
+            scale_notice_shown=scale_notice_shown,
+        )
+        await finish_survey(message, state)
+        return
+
+    if target.kind == "resume_department_contact":
+        await prime_run_state(
+            state,
+            run,
+            lang,
+            assigned_dispatchers,
+            telegram_id,
+            dep_idx=target.dep_idx,
+            q_idx=0,
+            dispatcher_idx=0,
+            scale_notice_shown=scale_notice_shown,
+        )
+        await ask_department_contact(message, state)
+        return
+
+    if target.kind == "resume_department_question":
+        await prime_run_state(
+            state,
+            run,
+            lang,
+            assigned_dispatchers,
+            telegram_id,
+            dep_idx=target.dep_idx,
+            q_idx=target.q_idx,
+            dispatcher_idx=0,
+            scale_notice_shown=scale_notice_shown,
+        )
+        await ask_department_question(message, state)
+        return
+
+    if target.kind == "resume_dispatcher_rating":
+        dep = catalog.departments[target.dep_idx]
+        await prime_run_state(
+            state,
+            run,
+            lang,
+            assigned_dispatchers,
+            telegram_id,
+            dep_idx=target.dep_idx,
+            q_idx=max(0, len(dep.questions) - 1),
+            dispatcher_idx=target.dispatcher_idx,
+            scale_notice_shown=scale_notice_shown,
+        )
+        await ask_dispatcher_rating_question(message, state)
+        return
+
+    raise ValueError(f"Unsupported resume target: {target.kind}")
 
 
 async def export_progress_snapshot(
@@ -381,6 +542,7 @@ async def move_to_next_department(message: Message, state: FSMContext) -> None:
 async def begin_or_lock_run(message: Message, state: FSMContext, lang: str, driver: Driver, telegram_id: int) -> None:
     m_key = month_key()
     assigned_dispatchers: list[dict[str, object]] = []
+    existing_responses: list[Response] = []
     async with SessionLocal() as session:
         user = await get_or_create_user(session, telegram_id, lang)
         existing = await get_run_for_driver_month(session, driver.id, m_key)
@@ -394,7 +556,7 @@ async def begin_or_lock_run(message: Message, state: FSMContext, lang: str, driv
             for slot_number, dispatcher_id, first_name, last_name in dispatcher_rows
         ]
 
-        if existing and (existing.status == "completed" or await run_has_responses(session, existing.id)):
+        if existing and existing.status == "completed":
             await session.commit()
             await message.answer(t("already_completed", lang), reply_markup=main_menu_kb(lang))
             await message.answer(t("ask_unit", lang), reply_markup=main_menu_kb(lang))
@@ -402,7 +564,9 @@ async def begin_or_lock_run(message: Message, state: FSMContext, lang: str, driv
             return
 
         if existing:
-            await reset_run(session, existing, driver.unit_number, driver.first_name, driver.last_name)
+            existing_responses = await get_responses_for_run(session, existing.id)
+            if not existing_responses:
+                await reset_run(session, existing, driver.unit_number, driver.first_name, driver.last_name)
             existing.language = lang
             run = existing
         else:
@@ -418,6 +582,10 @@ async def begin_or_lock_run(message: Message, state: FSMContext, lang: str, driv
             )
         await session.commit()
 
+    if existing and existing_responses:
+        await resume_existing_run(message, state, lang, run, assigned_dispatchers, existing_responses, telegram_id)
+        return
+
     await state.update_data(
         run_id=run.id,
         dep_idx=0,
@@ -428,9 +596,9 @@ async def begin_or_lock_run(message: Message, state: FSMContext, lang: str, driv
         lang=lang,
         telegram_id=telegram_id,
         survey_month=m_key,
-        unit_number=driver.unit_number,
-        first_name=driver.first_name,
-        last_name=driver.last_name,
+        unit_number=run.unit_number,
+        first_name=run.first_name,
+        last_name=run.last_name,
     )
 
     first_department = catalog.departments[0]
